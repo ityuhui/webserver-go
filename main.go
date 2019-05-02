@@ -6,8 +6,8 @@ import (
 )
 
 func api1(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the HomePage!")
-	fmt.Println("Endpoint Hit: homePage")
+	fmt.Fprintf(w, "Welcome to the api1!")
+	fmt.Println("Endpoint Hit: api1")
 }
 
 func main() {
