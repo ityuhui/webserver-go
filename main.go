@@ -33,7 +33,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 			err error
 		)
 		for {
-			if err = wbsCon.WriteMessage(websocket.TextMessage, []byte("Heartbeat from server")); err != nil {
+			if err = wbsCon.WriteMessage(websocket.TextMessage, []byte("Websocket heartbeat from webserver-go")); err != nil {
 				return
 			}
 			time.Sleep(10 * time.Second)
@@ -60,6 +60,10 @@ func api1(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	fmt.Println("Webserver-go starts...")
+	fmt.Println(" * static file serves at http://0.0.0.0:8080/")
+	fmt.Println(" * RESTful API serves at http://0.0.0.0:8080/api1")
+	fmt.Println(" * websocket serves at 0.0.0.0:8080/ws");
 	http.Handle("/", http.FileServer(http.Dir("html/")))
 	http.HandleFunc("/api1", api1)
 	http.HandleFunc("/ws", wsHandler)
