@@ -44,9 +44,13 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		if _, data, err = wbsCon.ReadMessage(); err != nil {
 			goto ERR
 		}
+		fmt.Println("Received:")
+		fmt.Println(data)
 		if err = wbsCon.WriteMessage(websocket.TextMessage, data); err != nil {
 			goto ERR
 		}
+		fmt.Println("Sent:")
+		fmt.Println(data)
 	}
 
 ERR:
