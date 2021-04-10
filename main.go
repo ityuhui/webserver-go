@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gorilla/websocket"
 	"net/http"
-	"time"
+	_ "time"
 )
 
 var (
@@ -28,7 +28,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	go func() {
+	/*go func() {
 		var (
 			err error
 		)
@@ -38,7 +38,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			time.Sleep(10 * time.Second)
 		}
-	}()
+	}()*/
 
 	for {
 		if _, data, err = wbsCon.ReadMessage(); err != nil {
