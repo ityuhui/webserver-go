@@ -1,6 +1,11 @@
-CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo
+#! /bin/bash
 
 BIN=./webserver-go
+
+if [ ! -e $BIN -o ! -f $BIN ]; then
+	CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo
+fi
+
 if [ -e $BIN -a -f $BIN ]; then
     echo "Build image for $BIN"
     docker build -t ityuhui/webserver-go . \
