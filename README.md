@@ -2,4 +2,4 @@
 http server written by golang supporting:
 - websocket
 - RESTful API
-- static file
+- static files
