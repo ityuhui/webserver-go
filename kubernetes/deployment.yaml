@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webserver-go-deployment
+spec:
+  selector:
+    matchLabels:
+      app: webserver-go
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: webserver-go
+    spec:
+      containers:
+      - name: webserver-go-container
+        image: ityuhui/webserver-go:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
