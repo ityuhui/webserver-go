@@ -1,4 +1,4 @@
 FROM scratch
 COPY webserver-go /
-COPY static /static
+COPY public /public
 ENTRYPOINT ["/webserver-go"]

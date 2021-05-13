@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/websocket"
 	"net/http"
 	_ "time"
+
+	"github.com/gorilla/websocket"
 )
 
 var (
@@ -58,18 +59,18 @@ ERR:
 
 }
 
-func api1(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Welcome to the api1!")
-	fmt.Println("Endpoint Hit: api1")
+func welcomeHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Welcome to the /api/welcome !")
+	fmt.Println("Endpoint Hit: /api/welcome")
 }
 
 func main() {
 	fmt.Println("Webserver-go starts...")
 	fmt.Println(" * static file serves at http://0.0.0.0:8080/")
-	fmt.Println(" * RESTful API serves at http://0.0.0.0:8080/api1")
-	fmt.Println(" * websocket serves at 0.0.0.0:8080/ws");
-	http.Handle("/", http.FileServer(http.Dir("static/")))
-	http.HandleFunc("/api1", api1)
+	fmt.Println(" * RESTful API serves at http://0.0.0.0:8080/api/")
+	fmt.Println(" * websocket serves at 0.0.0.0:8080/ws")
+	http.Handle("/", http.FileServer(http.Dir("public/")))
+	http.HandleFunc("/api/welcome", welcomeHandler)
 	http.HandleFunc("/ws", wsHandler)
 	http.ListenAndServe(":8080", nil)
 }
