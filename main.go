@@ -81,7 +81,11 @@ func main() {
 	fmt.Println(" * websocket serves at 0.0.0.0:8080/ws")
 	http.Handle("/", http.FileServer(http.Dir("public/")))
 	http.HandleFunc("/api/welcome", welcomeHandler)
-	http.HandleFunc("/api/checkindata", GetCheckInData)
+
+	InitCheckInData()
+	http.HandleFunc("/api/checkindata", CheckInDataHandler)
+
 	http.HandleFunc("/ws", wsHandler)
+
 	http.ListenAndServe(":8080", nil)
 }
