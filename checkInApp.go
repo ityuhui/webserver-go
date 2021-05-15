@@ -8,18 +8,19 @@ import (
 )
 
 type CheckInData struct {
-	Already  int    `json:"already"`
-	Left     int    `json:"left"`
-	LastTime string `json:"lastTime"`
+	Already int      `json:"already"`
+	Left    int      `json:"left"`
+	History []string `json:"history"`
 }
 
 var cid CheckInData
 
 func InitCheckInData() {
+
 	cid = CheckInData{
-		Already:  1,
-		Left:     49,
-		LastTime: "2021/5/11",
+		Already: 1,
+		Left:    49,
+		History: []string{"2021/5/11"},
 	}
 }
 
@@ -43,7 +44,7 @@ func getCheckInData(w http.ResponseWriter, r *http.Request) {
 func postCheckInData(w http.ResponseWriter, r *http.Request) {
 	cid.Already++
 	cid.Left--
-	cid.LastTime = time.Now().Format("2006/01/02")
+	cid.History = append(cid.History, time.Now().Format("2006/01/02"))
 	jsonCid, _ := json.Marshal(cid)
 
 	fmt.Fprintf(w, string(jsonCid))
@@ -53,7 +54,7 @@ func postCheckInData(w http.ResponseWriter, r *http.Request) {
 func deleteCheckInData(w http.ResponseWriter, r *http.Request) {
 	cid.Already--
 	cid.Left++
-	cid.LastTime = time.Now().Format("2006/01/02")
+	cid.History = append(cid.History[:len(cid.History)-1])
 	jsonCid, _ := json.Marshal(cid)
 
 	fmt.Fprintf(w, string(jsonCid))
