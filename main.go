@@ -82,7 +82,7 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir("public/")))
 	http.HandleFunc("/api/welcome", welcomeHandler)
 
-	InitCheckInData()
+	InitCheckInApp()
 	http.HandleFunc("/api/checkindata", CheckInDataHandler)
 
 	http.HandleFunc("/ws", wsHandler)
