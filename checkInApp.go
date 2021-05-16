@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type checkInData struct {
-	Already int      `json:"already"`
-	Left    int      `json:"left"`
-	History []string `json:"history"`
+	Already int    `json:"already"`
+	Left    int    `json:"left"`
+	Date    string `json:"date"`
 }
 
 type checkInAppInstance struct {
@@ -45,29 +46,48 @@ func initDB() {
 	if dbName == "" {
 		dbName = "./bkbci.db"
 	}
-	db, err := sql.Open("sqlite3", "dbName")
+	db, err := sql.Open("sqlite3", dbName)
 	checkDBErr(err)
-	createTableIfNeed()
 	app.db = db
+	createTableIfNeed()
+	initTable()
 }
 
 func createTableIfNeed() {
 	sql_table := `CREATE TABLE IF NOT EXISTS "cid" (
 		"id" INTEGER PRIMARY KEY AUTOINCREMENT,
 		"already" INTEGER NULL,
-		"left" INTEGER NULL
-	);
-	
-	CREATE TABLE IF NOT EXISTS "cih" (
-		"id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		"left" INTEGER NULL,
 		"date" TEXT NULL
 	);`
 
 	app.db.Exec(sql_table)
 }
 
-func getCidTable() (int, int) {
-	cidRows, err := app.db.Query("SELECT already,left FROM cid")
+func initTable() {
+	cidRows, err := app.db.Query("SELECT count(*) FROM cid")
+	checkDBErr(err)
+	var count int
+	for cidRows.Next() {
+		err = cidRows.Scan(&count)
+		checkDBErr(err)
+	}
+	if count == 0 {
+		insertTheDefaultRecord()
+	}
+}
+
+func insertTheDefaultRecord() {
+	sql := `INSERT INTO cid 
+		("already", "left", "date" )
+		VALUES 
+		(	0,		5,		"" )`
+
+	app.db.Exec(sql)
+}
+
+func getLastAlreadyAndLeft() (int, int) {
+	cidRows, err := app.db.Query("SELECT already,left FROM cid order by id desc limit 1")
 	checkDBErr(err)
 	var already int
 	var left int
@@ -80,28 +100,27 @@ func getCidTable() (int, int) {
 	return already, left
 }
 
-func getCihTable() []string {
-	cihRows, err := app.db.Query("SELECT date FROM cih")
+func getDataFromDB() []*checkInData {
+	var result []*checkInData
+	cidRows, err := app.db.Query("SELECT already,left,date FROM cid")
 	checkDBErr(err)
-	var history []string
-	for cihRows.Next() {
+	for cidRows.Next() {
+		var already int
+		var left int
 		var date string
-		err = cihRows.Scan(&date)
+		err = cidRows.Scan(&already, &left, &date)
 		checkDBErr(err)
+		fmt.Println(already)
+		fmt.Println(left)
 		fmt.Println(date)
-		history = append(history, date)
+		cid := &checkInData{
+			Already: already,
+			Left:    left,
+			Date:    date,
+		}
+		result = append(result, cid)
 	}
-	return history
-}
-
-func getDataFromDB() checkInData {
-	already, left := getCidTable()
-	history := getCihTable()
-	return checkInData{
-		Already: already,
-		Left:    left,
-		History: history,
-	}
+	return result
 }
 
 func CheckInDataHandler(w http.ResponseWriter, r *http.Request) {
@@ -122,8 +141,7 @@ func getCheckInData(w http.ResponseWriter, r *http.Request) {
 }
 
 func postCheckInData(w http.ResponseWriter, r *http.Request) {
-	incCidTable()
-	incCihTable()
+	incCid()
 	jsonCid, _ := json.Marshal(getDataFromDB())
 
 	fmt.Fprintf(w, string(jsonCid))
@@ -131,26 +149,36 @@ func postCheckInData(w http.ResponseWriter, r *http.Request) {
 }
 
 func deleteCheckInData(w http.ResponseWriter, r *http.Request) {
-	decCidTable()
-	decCihTable()
+	decCid()
 	jsonCid, _ := json.Marshal(getDataFromDB())
 
 	fmt.Fprintf(w, string(jsonCid))
 	fmt.Println("DELETE : /api/checkindata !")
 }
 
-func incCidTable() {
+func incCid() {
+	already, left := getLastAlreadyAndLeft()
 
+	stmt, err := app.db.Prepare("INSERT INTO cid (already, left, date) values(?,?,?)")
+	checkDBErr(err)
+
+	res, err := stmt.Exec(already+1, left-1, time.Now().Format("2006-01-02"))
+	checkDBErr(err)
+
+	id, err := res.LastInsertId()
+	checkDBErr(err)
+
+	fmt.Println(id)
 }
 
-func incCihTable() {
+func decCid() {
+	sql_delete_last_item := "delete from cid where id in (select id from cid order by id desc limit 1)"
 
-}
+	res, err := app.db.Exec(sql_delete_last_item)
+	checkDBErr(err)
 
-func decCidTable() {
+	affect, err := res.RowsAffected()
+	checkDBErr(err)
 
-}
-
-func decCihTable() {
-
+	fmt.Println(affect)
 }
