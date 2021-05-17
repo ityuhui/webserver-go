@@ -18,3 +18,14 @@ spec:
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8080
+        volumeMounts:
+        - name: db-volume
+          mountPath: /db
+        env:
+        - name: CIDB_FILE
+          value: "/db/bkbci.db"
+      volumes:
+        - name: db-volume
+          hostPath:
+            path: /db
+            type: DirectoryOrCreate
